@@ -1,0 +1,112 @@
+{
+  "info": {
+    "name": "Fooding APIs",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "POST register",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/register",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Test User\",\n  \"email\": \"newuser@fooding.com\",\n  \"mobile\": \"9876543210\",\n  \"password\": \"Test@123\"\n}"
+        }
+      }
+    },
+    {
+      "name": "POST login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var json = pm.response.json();",
+              "if (json.token) pm.collectionVariables.set('token', json.token);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"test@fooding.com\",\n  \"password\": \"Test@123\"\n}"
+        }
+      }
+    },
+    {
+      "name": "GET foods",
+      "request": { "method": "GET", "url": "{{baseUrl}}/foods" }
+    },
+    {
+      "name": "POST orders",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": "{{baseUrl}}/orders",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"amount\": 249,\n  \"name\": \"Rahul Sharma\",\n  \"mobile\": \"9876543210\",\n  \"address\": \"12 MG Road, Indore\",\n  \"pincode\": \"452001\"\n}"
+        }
+      }
+    },
+    {
+      "name": "GET orders",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": "{{baseUrl}}/orders"
+      }
+    },
+    {
+      "name": "GET order by id",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": "{{baseUrl}}/orders/ORD123"
+      }
+    },
+    {
+      "name": "POST payment create",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": "{{baseUrl}}/payment/create",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"order_id\": \"ORD123\",\n  \"amount\": 249\n}"
+        }
+      }
+    },
+    {
+      "name": "POST payment verify",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": "{{baseUrl}}/payment/verify",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"order_id\": \"ORD123\",\n  \"razorpay_order_id\": \"order_test_1\",\n  \"razorpay_payment_id\": \"pay_test_1\",\n  \"razorpay_signature\": \"\"\n}"
+        }
+      }
+    }
+  ]
+}

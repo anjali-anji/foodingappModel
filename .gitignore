@@ -1,0 +1,55 @@
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Secrets and local env
+.env
+.env.*
+!.env.example
+*.pem
+GoogleService-Info.plist
+!mobile/android/app/google-services.json
+firebase-adminsdk*.json
+serviceAccount*.json
+
+# Node
+node_modules/
+npm-debug.log*
+backend/data/
+backend/*.sqlite
+backend/*.db
+
+# Flutter / Dart
+mobile/.dart_tool/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+mobile/.packages
+mobile/build/
+mobile/.pub-cache/
+mobile/.pub/
+mobile/coverage/
+
+# Android
+mobile/android/.gradle/
+mobile/android/local.properties
+mobile/android/app/debug
+mobile/android/app/profile
+mobile/android/app/release
+mobile/android/captures/
+*.iml
+.idea/
+
+# iOS / macOS
+mobile/ios/Pods/
+mobile/ios/.symlinks/
+mobile/ios/Flutter/Flutter.framework
+mobile/ios/Flutter/Flutter.podspec
+mobile/macos/Flutter/ephemeral/
+
+# IDE
+.vscode/
+*.swp
+
+# Logs
+*.log

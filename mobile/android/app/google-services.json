@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "817930242373",
+    "project_id": "fooding-78856",
+    "storage_bucket": "fooding-78856.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:817930242373:android:fa4b3b6ad4c0acdc67562c",
+        "android_client_info": {
+          "package_name": "com.foodingapp.fooding_mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDilaK-54z_2YcYAQ0y8ZhCxXS5bs5M4Ck"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
