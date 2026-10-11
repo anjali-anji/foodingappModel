@@ -75,7 +75,7 @@ class ApiService {
     if (path.contains('payment')) {
       return const Duration(seconds: 30);
     }
-    return const Duration(seconds: 6);
+    return const Duration(seconds: 4);
   }
 
   Future<void> _resolveBaseUrl() async {
@@ -149,9 +149,7 @@ class ApiService {
         _resolved = false;
       }
     }
-    throw ApiException(
-      'Server nahi mila. USB cable lagao, PC pe backend chalu rakho, phir: adb reverse tcp:3000 tcp:3000 ($lastError)',
-    );
+    throw ApiException('Server not found');
   }
 
   Map<String, dynamic> _decode(http.Response res) {

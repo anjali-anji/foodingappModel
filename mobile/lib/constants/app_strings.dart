@@ -44,7 +44,7 @@ class AppStrings {
   static const String paymentStatus = 'Payment Status';
   static const String orderStatus = 'Order Status';
   static const String logout = 'Logout';
-  static const String logoutConfirm = 'Kya aap logout karna chahte ho?';
+  static const String logoutConfirm = 'Do you want to logout?';
   static const String cancel = 'Cancel';
   static const String comingSoon = 'This screen will be connected in the next milestone.';
 }
