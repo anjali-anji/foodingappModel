@@ -65,13 +65,20 @@ class _FoodsViewState extends State<FoodsView> {
                 itemCount: foods.length,
                 itemBuilder: (context, index) {
                   final food = foods[index];
-                  final qty = cart.quantityOf(food.id);
-                  return FoodCard(
-                    food: food,
-                    quantity: qty,
-                    onAdd: () => context.read<CartProvider>().add(food),
-                    onIncrease: () => context.read<CartProvider>().increase(food.id),
-                    onDecrease: () => context.read<CartProvider>().decrease(food.id),
+                  return Selector<CartProvider, int>(
+                    selector: (_, cart) => cart.quantityOf(food.id),
+                    builder: (context, qty, _) {
+                      return FoodCard(
+                        key: ValueKey('food-card-${food.id}-$qty'),
+                        food: food,
+                        quantity: qty,
+                        onAdd: () => context.read<CartProvider>().add(food),
+                        onIncrease: () =>
+                            context.read<CartProvider>().increase(food.id),
+                        onDecrease: () =>
+                            context.read<CartProvider>().decrease(food.id),
+                      );
+                    },
                   );
                 },
               ),

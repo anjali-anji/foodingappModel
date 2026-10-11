@@ -8,6 +8,8 @@ class OrdersProvider extends ChangeNotifier {
   List<OrderModel> _orders = [];
   bool loading = false;
   String? error;
+  Map<String, dynamic>? lastEmail;
+  Map<String, dynamic>? lastFcm;
 
   List<OrderModel> get orders => List.unmodifiable(_orders);
 
@@ -96,6 +98,10 @@ class OrdersProvider extends ChangeNotifier {
     } else {
       _orders.insert(0, order);
     }
+    lastEmail = json['email'] is Map ? Map<String, dynamic>.from(json['email'] as Map) : null;
+    lastFcm = json['fcm'] is Map ? Map<String, dynamic>.from(json['fcm'] as Map) : null;
+    debugPrint('EMAIL AFTER CONFIRM $lastEmail');
+    debugPrint('FCM AFTER CONFIRM $lastFcm');
     notifyListeners();
     return order;
   }

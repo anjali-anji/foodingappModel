@@ -3,19 +3,21 @@ const path = require('path');
 
 let admin = null;
 const saPath = path.join(__dirname, '..', 'serviceAccount.json');
+console.log('[FCM] serviceAccount.json', fs.existsSync(saPath) ? 'READY' : 'MISSING');
 
 function getAdmin() {
   if (admin) return admin;
   if (!fs.existsSync(saPath)) {
     return null;
   }
-  // Lazy require so app still starts without the package being used.
   admin = require('firebase-admin');
-  if (!admin.apps.length) {
+  const { getMessaging } = require('firebase-admin/messaging');
+  if (!admin.getApps().length) {
     admin.initializeApp({
-      credential: admin.credential.cert(require(saPath)),
+      credential: admin.cert(require(saPath)),
     });
   }
+  admin._messaging = getMessaging();
   return admin;
 }
 
@@ -32,7 +34,7 @@ async function sendFcmAfterConfirm({ token, orderId, amount }) {
   const fb = getAdmin();
   if (fb) {
     try {
-      const id = await fb.messaging().send({
+      const id = await fb._messaging.send({
         token,
         notification: { title, body },
         data,

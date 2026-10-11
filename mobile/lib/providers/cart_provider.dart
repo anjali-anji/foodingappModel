@@ -19,6 +19,8 @@ class CartProvider extends ChangeNotifier {
 
   final Map<int, int> _quantities = {};
   final Map<int, FoodModel> _foods = {};
+  bool _hydrated = false;
+  bool _mutated = false;
 
   Map<int, int> get quantities => Map.unmodifiable(_quantities);
 
@@ -49,8 +51,11 @@ class CartProvider extends ChangeNotifier {
   double get total => subtotal;
 
   Future<void> restore() async {
+    if (_hydrated) return;
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(_storageKey);
+    _hydrated = true;
+    if (_mutated) return;
     if (raw == null || raw.isEmpty) return;
     try {
       final list = jsonDecode(raw) as List<dynamic>;
@@ -80,18 +85,22 @@ class CartProvider extends ChangeNotifier {
     await prefs.setString(_storageKey, jsonEncode(data));
   }
 
+  void _commit() {
+    _mutated = true;
+    notifyListeners();
+    _persist();
+  }
+
   void add(FoodModel food) {
     _foods[food.id] = food;
     _quantities[food.id] = (_quantities[food.id] ?? 0) + 1;
-    notifyListeners();
-    _persist();
+    _commit();
   }
 
   void increase(int foodId) {
     if (_quantities.containsKey(foodId)) {
       _quantities[foodId] = _quantities[foodId]! + 1;
-      notifyListeners();
-      _persist();
+      _commit();
     }
   }
 
@@ -103,21 +112,18 @@ class CartProvider extends ChangeNotifier {
       return;
     }
     _quantities[foodId] = qty - 1;
-    notifyListeners();
-    _persist();
+    _commit();
   }
 
   void remove(int foodId) {
     _quantities.remove(foodId);
     _foods.remove(foodId);
-    notifyListeners();
-    _persist();
+    _commit();
   }
 
   void clear() {
     _quantities.clear();
     _foods.clear();
-    notifyListeners();
-    _persist();
+    _commit();
   }
 }

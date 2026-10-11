@@ -1,4 +1,29 @@
+const fs = require('fs');
+const path = require('path');
 const nodemailer = require('nodemailer');
+
+const dataDir = path.join(__dirname, '..', 'data');
+const lastJsonPath = path.join(dataDir, 'last-order-email.json');
+const lastHtmlPath = path.join(dataDir, 'last-order-email.html');
+
+function saveLocalCopy({ to, orderId, amount, paymentStatus, html, subject, previewUrl, ethereal }) {
+  if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true });
+  }
+  const record = {
+    to,
+    orderId,
+    amount,
+    paymentStatus,
+    subject,
+    previewUrl: previewUrl || null,
+    ethereal: !!ethereal,
+    savedAt: new Date().toISOString(),
+  };
+  fs.writeFileSync(lastJsonPath, JSON.stringify(record, null, 2));
+  fs.writeFileSync(lastHtmlPath, html);
+  return record;
+}
 
 async function sendOrderEmail({ to, orderId, amount, paymentStatus }) {
   const html = `
@@ -43,15 +68,46 @@ async function sendOrderEmail({ to, orderId, amount, paymentStatus }) {
     });
 
     const previewUrl = nodemailer.getTestMessageUrl(info);
+    const local = saveLocalCopy({
+      to,
+      orderId,
+      amount,
+      paymentStatus,
+      html,
+      subject,
+      previewUrl,
+      ethereal: usingEthereal,
+    });
     console.log('[EMAIL] sent', { to, orderId, amount, paymentStatus, id: info.messageId, previewUrl });
     if (previewUrl) {
       console.log('[EMAIL] OPEN THIS LINK:', previewUrl);
     }
-    return { sent: true, previewUrl, ethereal: usingEthereal };
+    console.log('[EMAIL] local copy', lastHtmlPath);
+    return { sent: true, previewUrl, ethereal: usingEthereal, ...local };
   } catch (err) {
     console.log('[EMAIL] FAILED', err.message);
-    return { sent: false, error: err.message };
+    saveLocalCopy({
+      to,
+      orderId,
+      amount,
+      paymentStatus,
+      html,
+      subject,
+      previewUrl: null,
+      ethereal: false,
+    });
+    return { sent: false, error: err.message, localSaved: true };
   }
 }
 
-module.exports = { sendOrderEmail };
+function readLastEmail() {
+  if (!fs.existsSync(lastJsonPath)) return null;
+  return JSON.parse(fs.readFileSync(lastJsonPath, 'utf8'));
+}
+
+function lastEmailHtml() {
+  if (!fs.existsSync(lastHtmlPath)) return null;
+  return fs.readFileSync(lastHtmlPath, 'utf8');
+}
+
+module.exports = { sendOrderEmail, readLastEmail, lastEmailHtml };

@@ -53,6 +53,31 @@ class ApiService {
     return copy;
   }
 
+  List<String> _urlsToTry() {
+    final selected = ApiConstants.baseUrl;
+    final rest = ApiConstants.baseUrlCandidates
+        .where((url) => url != selected)
+        .toList();
+    return [selected, ...rest];
+  }
+
+  bool _isUnreachable(Object error) {
+    final text = error.toString();
+    return text.contains('SocketException') ||
+        text.contains('Connection refused') ||
+        text.contains('Failed host lookup') ||
+        text.contains('Network is unreachable') ||
+        text.contains('Connection timed out') ||
+        text.contains('TimeoutException');
+  }
+
+  Duration _timeoutFor(String path) {
+    if (path.contains('payment')) {
+      return const Duration(seconds: 30);
+    }
+    return const Duration(seconds: 6);
+  }
+
   Future<void> _resolveBaseUrl() async {
     if (_resolved) return;
     for (final url in ApiConstants.baseUrlCandidates) {
@@ -60,7 +85,7 @@ class ApiService {
       try {
         final res = await http
             .get(Uri.parse('$url/'))
-            .timeout(const Duration(seconds: 3));
+            .timeout(const Duration(milliseconds: 800));
         debugPrint('API TRY RESULT $url => ${res.statusCode} ${res.body}');
         if (res.statusCode == 200) {
           ApiConstants.baseUrl = url;
@@ -72,7 +97,7 @@ class ApiService {
         debugPrint('API TRY FAIL $url => $e');
       }
     }
-    debugPrint('API NONE WORKED, using ${ApiConstants.baseUrl}');
+    debugPrint('API NONE WORKED, will retry per request');
   }
 
   Future<Map<String, dynamic>> post(
@@ -81,45 +106,52 @@ class ApiService {
     bool auth = false,
   }) async {
     await _resolveBaseUrl();
-    final uri = Uri.parse('${ApiConstants.baseUrl}$path');
-    debugPrint('API POST $uri');
     debugPrint('API BODY ${_safeBody(body)}');
-    try {
-      final res = await http
-          .post(
-            uri,
-            headers: _headers(auth: auth),
-            body: jsonEncode(body),
-          )
-          .timeout(const Duration(seconds: 12));
-      debugPrint('API POST STATUS ${res.statusCode}');
-      debugPrint('API POST RESPONSE ${res.body}');
-      return _decode(res);
-    } catch (e) {
-      debugPrint('API POST ERROR $uri => $e');
-      throw ApiException(
-        'Server nahi mila. Backend chalu hai? USB ke liye adb reverse, ya same Wi-Fi. ($e)',
-      );
-    }
+    return _send(
+      path,
+      (uri) => http.post(
+        uri,
+        headers: _headers(auth: auth),
+        body: jsonEncode(body),
+      ),
+    );
   }
 
   Future<Map<String, dynamic>> get(String path, {bool auth = false}) async {
     await _resolveBaseUrl();
-    final uri = Uri.parse('${ApiConstants.baseUrl}$path');
-    debugPrint('API GET $uri');
-    try {
-      final res = await http
-          .get(uri, headers: _headers(auth: auth))
-          .timeout(const Duration(seconds: 12));
-      debugPrint('API GET STATUS ${res.statusCode}');
-      debugPrint('API GET RESPONSE ${res.body}');
-      return _decode(res);
-    } catch (e) {
-      debugPrint('API GET ERROR $uri => $e');
-      throw ApiException(
-        'Server nahi mila. Backend chalu hai? USB ke liye adb reverse, ya same Wi-Fi. ($e)',
-      );
+    return _send(
+      path,
+      (uri) => http.get(uri, headers: _headers(auth: auth)),
+    );
+  }
+
+  Future<Map<String, dynamic>> _send(
+    String path,
+    Future<http.Response> Function(Uri uri) request,
+  ) async {
+    Object? lastError;
+    for (final base in _urlsToTry()) {
+      final uri = Uri.parse('$base$path');
+      debugPrint('API CALL $uri');
+      try {
+        final res = await request(uri).timeout(_timeoutFor(path));
+        debugPrint('API STATUS ${res.statusCode} $uri');
+        debugPrint('API RESPONSE ${res.body}');
+        ApiConstants.baseUrl = base;
+        _resolved = true;
+        return _decode(res);
+      } catch (e) {
+        lastError = e;
+        debugPrint('API ERROR $uri => $e');
+        if (!_isUnreachable(e)) {
+          throw ApiException(e.toString());
+        }
+        _resolved = false;
+      }
     }
+    throw ApiException(
+      'Server nahi mila. USB cable lagao, PC pe backend chalu rakho, phir: adb reverse tcp:3000 tcp:3000 ($lastError)',
+    );
   }
 
   Map<String, dynamic> _decode(http.Response res) {

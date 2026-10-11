@@ -15,7 +15,10 @@ class OrderDetailsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final order = context.watch<OrdersProvider>().byId(orderId);
+    final orders = context.watch<OrdersProvider>();
+    final order = orders.byId(orderId);
+    final email = orders.lastEmail;
+    final fcm = orders.lastFcm;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -43,6 +46,27 @@ class OrderDetailsView extends StatelessWidget {
                       _row(AppStrings.mobile, order.mobile ?? '-'),
                       _row(AppStrings.address, order.address ?? '-'),
                       _row(AppStrings.pincode, order.pincode ?? '-'),
+                    ],
+                  ),
+                ],
+                if (email != null || fcm != null) ...[
+                  SizedBox(height: 16.h),
+                  _DetailCard(
+                    children: [
+                      if (email != null)
+                        _row(
+                          'Email',
+                          email['sent'] == true
+                              ? 'Sent to ${email['to'] ?? ''}'
+                              : 'Saved locally',
+                        ),
+                      if (email?['previewUrl'] != null)
+                        _row('Email preview', email!['previewUrl'].toString()),
+                      if (fcm != null)
+                        _row(
+                          'FCM',
+                          fcm['sent'] == true ? 'Sent to phone' : 'Not sent',
+                        ),
                     ],
                   ),
                 ],

@@ -17,33 +17,43 @@ class QtyStepper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.fieldFill,
-        borderRadius: BorderRadius.circular(20.r),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          IconButton(
-            onPressed: onDecrease,
-            icon: Icon(Icons.remove, size: 18.sp, color: AppColors.textPrimary),
-            visualDensity: VisualDensity.compact,
-          ),
-          Text(
-            '$quantity',
-            style: TextStyle(
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
+    return SizedBox(
+      height: 34.h,
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.fieldFill,
+          borderRadius: BorderRadius.circular(20.r),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _stepButton(Icons.remove, onDecrease),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 8.w),
+              child: Text(
+                '$quantity',
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
+              ),
             ),
-          ),
-          IconButton(
-            onPressed: onIncrease,
-            icon: Icon(Icons.add, size: 18.sp, color: AppColors.textPrimary),
-            visualDensity: VisualDensity.compact,
-          ),
-        ],
+            _stepButton(Icons.add, onIncrease),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _stepButton(IconData icon, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20.r),
+      child: SizedBox(
+        width: 34.w,
+        height: 34.h,
+        child: Icon(icon, size: 18.sp, color: AppColors.textPrimary),
       ),
     );
   }

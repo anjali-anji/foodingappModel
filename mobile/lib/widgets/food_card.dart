@@ -80,35 +80,40 @@ class FoodCard extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: 8.h),
-                if (quantity > 0)
-                  Center(
-                    child: QtyStepper(
-                      quantity: quantity,
-                      onIncrease: onIncrease,
-                      onDecrease: onDecrease,
-                    ),
-                  )
-                else
-                  SizedBox(
-                    width: double.infinity,
-                    height: 34.h,
-                    child: ElevatedButton(
-                      onPressed: onAdd,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: AppColors.textPrimary,
-                        elevation: 0,
-                        padding: EdgeInsets.zero,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20.r),
+                KeyedSubtree(
+                  key: ValueKey('food-action-${food.id}-$quantity'),
+                  child: quantity > 0
+                      ? Center(
+                          child: QtyStepper(
+                            quantity: quantity,
+                            onIncrease: onIncrease,
+                            onDecrease: onDecrease,
+                          ),
+                        )
+                      : SizedBox(
+                          width: double.infinity,
+                          height: 34.h,
+                          child: ElevatedButton(
+                            onPressed: onAdd,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              foregroundColor: AppColors.textPrimary,
+                              elevation: 0,
+                              padding: EdgeInsets.zero,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20.r),
+                              ),
+                            ),
+                            child: Text(
+                              AppStrings.addToCart,
+                              style: TextStyle(
+                                fontSize: 12.sp,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                      child: Text(
-                        AppStrings.addToCart,
-                        style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w700),
-                      ),
-                    ),
-                  ),
+                ),
               ],
             ),
           ),

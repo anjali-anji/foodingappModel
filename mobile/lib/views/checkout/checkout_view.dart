@@ -9,6 +9,7 @@ import '../../constants/app_sizes.dart';
 import '../../constants/app_strings.dart';
 import '../../helpers/price_format.dart';
 import '../../helpers/validators.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/cart_provider.dart';
 import '../../providers/orders_provider.dart';
 import '../../services/fcm_service.dart';
@@ -92,6 +93,7 @@ class _CheckoutViewState extends State<CheckoutView> {
         return;
       }
 
+      final email = context.read<AuthProvider>().user?.email ?? '';
       final options = {
         'key': keyId,
         'amount': (razorpayOrder['amount'] as num).toInt(),
@@ -101,7 +103,38 @@ class _CheckoutViewState extends State<CheckoutView> {
         'order_id': razorpayOrder['id'].toString(),
         'prefill': {
           'name': _nameController.text.trim(),
+          'email': email,
           'contact': _mobileController.text.trim(),
+        },
+        'method': {
+          'upi': true,
+          'card': true,
+          'netbanking': true,
+          'wallet': true,
+        },
+        'config': {
+          'display': {
+            'blocks': {
+              'upi_only': {
+                'name': 'Pay using UPI',
+                'instruments': [
+                  {'method': 'upi'},
+                ],
+              },
+              'other': {
+                'name': 'Cards, Netbanking & Wallets',
+                'instruments': [
+                  {'method': 'card'},
+                  {'method': 'netbanking'},
+                  {'method': 'wallet'},
+                ],
+              },
+            },
+            'sequence': ['block.upi_only', 'block.other'],
+            'preferences': {
+              'show_default_blocks': true,
+            },
+          },
         },
         'theme': {'color': '#F5C518'},
       };

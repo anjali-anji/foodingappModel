@@ -8,7 +8,7 @@ const jwt = require('jsonwebtoken');
 const Razorpay = require('razorpay');
 
 const { db, seedFoods, seedTestUser } = require('./db');
-const { sendOrderEmail } = require('./mail');
+const { sendOrderEmail, readLastEmail, lastEmailHtml } = require('./mail');
 const { sendFcmAfterConfirm } = require('./notify');
 
 const PORT = Number(process.env.PORT || 3000);
@@ -63,6 +63,22 @@ function publicUser(row) {
 
 app.get('/', (_req, res) => {
   res.json({ success: true, app: 'Fooding API' });
+});
+
+app.get('/emails/last', (_req, res) => {
+  const last = readLastEmail();
+  if (!last) {
+    return res.status(404).json({ success: false, message: 'No order email yet' });
+  }
+  if (String(_req.query.format || '') === 'html') {
+    const html = lastEmailHtml();
+    if (!html) {
+      return res.status(404).json({ success: false, message: 'No order email yet' });
+    }
+    res.type('html');
+    return res.send(html);
+  }
+  return res.json({ success: true, email: last });
 });
 
 app.post('/register', (req, res) => {
@@ -213,7 +229,12 @@ app.post('/payment/create', auth, async (req, res) => {
       razorpay_order: razorpayOrder,
     });
   } catch (err) {
-    return res.status(500).json({ success: false, message: err.message });
+    const message =
+      (err && err.error && err.error.description) ||
+      err.message ||
+      'Razorpay order create failed';
+    console.log('[RAZORPAY] CREATE FAILED', err.statusCode, message);
+    return res.status(500).json({ success: false, message });
   }
 });
 

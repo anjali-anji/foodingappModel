@@ -1,11 +1,13 @@
 # Mini Food Ordering App
 
-Flutter + Dart client, Node.js + Express backend, SQLite.
+Flutter + Node.js (Express) + SQLite + Razorpay Test + FCM + Email.
 
 ## Test credentials
 
 - Email: `test@fooding.com`
 - Password: `Test@123`
+
+Your registered account also works (example: `anjalishukla8090yt@gmail.com`).
 
 ## Run backend
 
@@ -15,7 +17,9 @@ npm install
 npm start
 ```
 
-API: `http://localhost:3000` (phone: `http://10.190.1.213:3000`)
+API: `http://localhost:3000`
+
+Phone USB: `adb reverse tcp:3000 tcp:3000` then app uses `http://127.0.0.1:3000`
 
 ## Run Flutter
 
@@ -25,34 +29,56 @@ flutter pub get
 flutter run
 ```
 
-Phone and PC same Wi-Fi pe hone chahiye. Emulator ke liye `mobile/lib/constants/api_constants.dart` me baseUrl `http://10.0.2.2:3000` karo.
-
 ## APIs
 
 - `POST /register`
 - `POST /login`
 - `GET /foods`
-- `POST /orders` (auth)
-- `POST /payment/create` (auth)
-- `POST /payment/verify` (auth)
-- `GET /orders` (auth)
-- `GET /orders/:id` (auth)
+- `POST /orders` (Bearer token)
+- `POST /payment/create` (Bearer token)
+- `POST /payment/verify` (Bearer token)
+- `GET /orders` (Bearer token)
+- `GET /orders/:id` (Bearer token)
 
 Postman: `docs/Fooding.postman_collection.json`  
-Schema: `docs/schema.sql`
+Schema: `docs/schema.sql`  
+Debug APK: `docs/fooding-debug.apk` (after build)
 
-## Razorpay Test Mode
+## Git
 
-1. Free account: https://dashboard.razorpay.com (Test Mode)
-2. `backend/.env` me daalo:
+Local repo is ready on branch `main`. GitHub pe naya empty repo banao, phir:
+
+```bash
+git remote add origin https://github.com/YOUR_USER/foodingApp.git
+git push -u origin main
+```
+
+## Notifications + email (done)
+
+- Firebase Admin key is at `backend/serviceAccount.json` (gitignored). Confirmed order sends FCM.
+- Email goes out after confirm (Ethereal test inbox if Gmail SMTP is empty).
+- Last email: `GET http://localhost:3000/emails/last` and `GET http://localhost:3000/emails/last?format=html`
+
+## Razorpay Test keys (optional, asli card UI)
+
+Keys ke bina app **Razorpay Test** dialog se payment complete karti hai.
+
+Asli Razorpay sheet ke liye:
+
+1. https://dashboard.razorpay.com → Test Mode → API Keys
+2. `backend/.env`:
 
 ```
-RAZORPAY_KEY_ID=rzp_test_xxxxxxxx
-RAZORPAY_KEY_SECRET=xxxxxxxx
+RAZORPAY_KEY_ID=rzp_test_xxxx
+RAZORPAY_KEY_SECRET=xxxx
 ```
 
-3. Backend restart: `npm start`
-4. Checkout pe **Pay with Razorpay**
-5. Test card: `4111 1111 1111 1111`, CVV `123`, expiry koi future date, name koi bhi
+3. Backend restart
 
-Payment success ke baad server signature verify karta hai, order **confirmed** hota hai, phir email + FCM.
+Test card: `4111 1111 1111 1111` CVV `123` expiry future
+
+Gmail inbox chahiye ho to SMTP App Password `.env` me daalo.
+
+## Login flow
+
+Saved session: pehle se login ho to Home, warna Login screen.
